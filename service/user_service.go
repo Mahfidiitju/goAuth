@@ -1,8 +1,14 @@
 package service
 
-import db "AuthInGo/db/repositories"
+import (
+	db "AuthInGo/db/repositories"
+	"AuthInGo/utils"
+	"fmt"
+)
 
 type UserService interface {
+	GetuUserById() error
+	LoginUser() error
 	CreateUser() error
 }
 type userServiceImpl struct {
@@ -16,6 +22,28 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 }
 
 func (s *userServiceImpl) CreateUser() error {
+	fmt.Println("create called")
+	password := "password123"
+	hassedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return err
+	}
+	fmt.Println(hassedPassword)
+	s.userRepository.Create("testuser3", "test@test3.com", hassedPassword)
+	return nil
+}
+func (s *userServiceImpl) GetuUserById() error {
+
 	s.userRepository.GetByID()
+	return nil
+}
+func (s *userServiceImpl) LoginUser() error {
+	user, err := s.userRepository.GetUserByEmail("test@test3.com")
+	if err != nil {
+		return err
+	}
+	fmt.Println(user)
+	response := utils.CheckPasswordHash("password123", user.Password)
+	fmt.Println(response)
 	return nil
 }
