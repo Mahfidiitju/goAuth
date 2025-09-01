@@ -2,14 +2,17 @@ package service
 
 import (
 	db "AuthInGo/db/repositories"
+	"AuthInGo/dto"
+	"AuthInGo/models"
 	"AuthInGo/utils"
+	"errors"
 	"fmt"
 )
 
 type UserService interface {
 	GetuUserById() error
-	LoginUser() error
-	CreateUser() error
+	LoginUser(payload *dto.LoginUserRequestDTO) (string, error)
+	CreateUser(payload *dto.RegisterUserRequestDTO) (*models.User, error)
 }
 type userServiceImpl struct {
 	userRepository db.UserRepository
@@ -21,36 +24,47 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 	}
 }
 
-func (s *userServiceImpl) CreateUser() error {
-	fmt.Println("create called")
-	password := "password123"
+func (s *userServiceImpl) CreateUser(payload *dto.RegisterUserRequestDTO) (*models.User, error) {
+	password := payload.Password
+	email := payload.Email
+	userName := payload.UserName
 	hassedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		return err
+		return &models.User{}, err
 	}
 	fmt.Println(hassedPassword)
-	s.userRepository.Create("testuser3", "test@test3.com", hassedPassword)
-	return nil
+
+	data, err := s.userRepository.Create(userName, email, hassedPassword)
+	if err != nil {
+		return &models.User{}, err
+	}
+	return data, nil
 }
+
 func (s *userServiceImpl) GetuUserById() error {
 
 	s.userRepository.GetByID()
 	return nil
 }
-func (s *userServiceImpl) LoginUser() error {
-	user, err := s.userRepository.GetUserByEmail("mahfidantor98@gmail.com")
+func (s *userServiceImpl) LoginUser(payload *dto.LoginUserRequestDTO) (string, error) {
+	email := payload.Email
+	password := payload.Password
+	user, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(user)
-	response := utils.CheckPasswordHash("password123", user.Password)
+	fmt.Println("up", user.Password)
+	fmt.Println("p", password)
+	response := utils.CheckPasswordHash(password, user.Password)
 	if !response {
 		fmt.Println("invalid password")
+		return "paassword not matched", errors.New("password not matched")
 	}
 	token, err := utils.CreateJWTToken(user.Id, user.Email)
 	if err != nil {
 		fmt.Println("invalid token", err)
+		return "", err
 	}
 	fmt.Println("JWT Token:", token)
-	return nil
+	return token, nil
 }

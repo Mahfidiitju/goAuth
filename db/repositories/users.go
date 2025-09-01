@@ -4,11 +4,12 @@ import (
 	"AuthInGo/models"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type UserRepository interface {
 	GetByID() (*models.User, error)
-	Create(username string, email string, password string) error
+	Create(username string, email string, password string) (*models.User, error)
 	GetAll() ([]*models.User, error)
 	DeleteByID(id int64) error
 	GetUserByEmail(email string) (*models.User, error)
@@ -33,31 +34,30 @@ func (u *UserRepositoryImpl) DeleteByID(id int64) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) Create(username string, email string, password string) error {
-	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+func (u *UserRepositoryImpl) Create(username string, email string, password string) (*models.User, error) {
+	now := time.Now().Format(time.RFC3339)
+	query := "INSERT INTO users (username, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
 
-	result, err := u.db.Exec(query, username, email, password)
-
+	result, err := u.db.Exec(query, username, email, password, now, now)
 	if err != nil {
-		fmt.Println("Error inserting user:", err)
-		return err
+		return nil, err
 	}
 
-	rowsAffected, rowErr := result.RowsAffected()
-
+	id, rowErr := result.LastInsertId()
 	if rowErr != nil {
-		fmt.Println("Error getting rows affected:", rowErr)
-		return rowErr
+		return nil, rowErr
 	}
 
-	if rowsAffected == 0 {
-		fmt.Println("No rows were affected, user not created")
-		return nil
+	user := &models.User{
+		Id:        id,
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
-	fmt.Println("User created successfully, rows affected:", rowsAffected)
-
-	return nil
+	return user, nil
 }
 
 func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
