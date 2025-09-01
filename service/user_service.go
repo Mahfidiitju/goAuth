@@ -38,12 +38,19 @@ func (s *userServiceImpl) GetuUserById() error {
 	return nil
 }
 func (s *userServiceImpl) LoginUser() error {
-	user, err := s.userRepository.GetUserByEmail("test@test3.com")
+	user, err := s.userRepository.GetUserByEmail("mahfidantor98@gmail.com")
 	if err != nil {
 		return err
 	}
 	fmt.Println(user)
 	response := utils.CheckPasswordHash("password123", user.Password)
-	fmt.Println(response)
+	if !response {
+		fmt.Println("invalid password")
+	}
+	token, err := utils.CreateJWTToken(user.Id, user.Email)
+	if err != nil {
+		fmt.Println("invalid token", err)
+	}
+	fmt.Println("JWT Token:", token)
 	return nil
 }
