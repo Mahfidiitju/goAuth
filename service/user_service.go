@@ -10,7 +10,7 @@ import (
 )
 
 type UserService interface {
-	GetuUserById() error
+	GetUserById(id int64) (*models.User, error)
 	LoginUser(payload *dto.LoginUserRequestDTO) (string, error)
 	CreateUser(payload *dto.RegisterUserRequestDTO) (*models.User, error)
 }
@@ -40,12 +40,16 @@ func (s *userServiceImpl) CreateUser(payload *dto.RegisterUserRequestDTO) (*mode
 	}
 	return data, nil
 }
-
-func (s *userServiceImpl) GetuUserById() error {
-
-	s.userRepository.GetByID()
-	return nil
+func (u *userServiceImpl) GetUserById(id int64) (*models.User, error) {
+	fmt.Println("Fetching user in UserService")
+	user, err := u.userRepository.GetByID(id)
+	if err != nil {
+		fmt.Println("Error fetching user:", err)
+		return nil, err
+	}
+	return user, nil
 }
+
 func (s *userServiceImpl) LoginUser(payload *dto.LoginUserRequestDTO) (string, error) {
 	email := payload.Email
 	password := payload.Password
