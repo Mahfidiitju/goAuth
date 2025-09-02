@@ -67,3 +67,12 @@ func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User fetched successfully", user)
 	fmt.Println("User fetched successfully:", user)
 }
+func (uc *UserController) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := uc.userService.GetAllUsers()
+	if err != nil {
+		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to fetch users", err)
+		return
+	}
+	utils.WriteJsonSuccessResponse(w, http.StatusOK, "Users fetched successfully", users)
+	fmt.Println("Users fetched successfully:", users)
+}

@@ -12,6 +12,7 @@ import (
 type UserService interface {
 	GetUserById(id int64) (*models.User, error)
 	LoginUser(payload *dto.LoginUserRequestDTO) (string, error)
+	GetAllUsers() ([]*models.User, error)
 	CreateUser(payload *dto.RegisterUserRequestDTO) (*models.User, error)
 }
 type userServiceImpl struct {
@@ -23,7 +24,13 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 		userRepository: _userRepository,
 	}
 }
-
+func (s *userServiceImpl) GetAllUsers() ([]*models.User, error) {
+	users, err := s.userRepository.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
 func (s *userServiceImpl) CreateUser(payload *dto.RegisterUserRequestDTO) (*models.User, error) {
 	password := payload.Password
 	email := payload.Email

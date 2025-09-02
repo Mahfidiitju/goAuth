@@ -26,8 +26,26 @@ func NewUserRepository(_db *sql.DB) UserRepository {
 }
 
 func (u *UserRepositoryImpl) GetAll() ([]*models.User, error) {
+	query := "SELECT id, username, email, password, created_at, updated_at FROM users"
+	rows, err := u.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	return []*models.User{}, nil
+	var users []*models.User
+	for rows.Next() {
+		user := &models.User{}
+		err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (u *UserRepositoryImpl) DeleteByID(id int64) error {
