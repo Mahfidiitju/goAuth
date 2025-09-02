@@ -32,7 +32,6 @@ func (s *userServiceImpl) CreateUser(payload *dto.RegisterUserRequestDTO) (*mode
 	if err != nil {
 		return &models.User{}, err
 	}
-	fmt.Println(hassedPassword)
 
 	data, err := s.userRepository.Create(userName, email, hassedPassword)
 	if err != nil {

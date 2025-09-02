@@ -20,15 +20,7 @@ func NewUserController(_userService service.UserService) *UserController {
 }
 
 func (c *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	var payload dto.RegisterUserRequestDTO
-	if jsonErr := utils.ReadJsonBody(r, &payload); jsonErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Invalid request body", jsonErr)
-		return
-	}
-	if validationErr := utils.Validator.Struct(payload); validationErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Validation error", validationErr)
-		return
-	}
+	payload := r.Context().Value("payload").(dto.RegisterUserRequestDTO)
 	data, e := c.userService.CreateUser(&payload)
 	if e != nil {
 		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "User creation failed", e)
@@ -38,16 +30,7 @@ func (c *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 func (c *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var payload dto.LoginUserRequestDTO
-	if jsonErr := utils.ReadJsonBody(r, &payload); jsonErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Invalid request body", jsonErr)
-		return
-	}
-	fmt.Println("Payload received:", payload)
-
-	if validationErr := utils.Validator.Struct(payload); validationErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Validation error", validationErr)
-		return
-	}
+	payload = r.Context().Value("payload").(dto.LoginUserRequestDTO)
 	token, err := c.userService.LoginUser(&payload)
 	if err != nil {
 		utils.WriteJsonErrorResponse(w, http.StatusUnauthorized, "Login failed", err)
