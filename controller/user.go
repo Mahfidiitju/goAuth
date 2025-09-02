@@ -42,6 +42,9 @@ func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Fetching user by ID in UserController")
 
 	userId := r.URL.Query().Get("id")
+	if userId == "" {
+		userId = r.Context().Value("userID").(string)
+	}
 	fmt.Println("User ID:", userId)
 	if userId == "" {
 		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "User ID is required", fmt.Errorf("missing user ID"))
